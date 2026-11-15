@@ -70,40 +70,45 @@ func advantage_on() -> bool:
 	return context == Context.MILK_IMPORTANT and strength != Strength.NONE
 
 
-## Relative reproductive weights (w_PP, w_Pn, w_nn).
-static func weights(for_context: int, for_strength: int) -> Vector3:
+## Relative reproductive weights [w_PP, w_Pn, w_nn].
+## (Plain 64-bit floats, not Vector3: a Vector3 holds 32-bit floats, and that rounding would make
+## the allele frequency creep when nothing is selecting on it.)
+static func weights(for_context: int, for_strength: int) -> Array[float]:
 	if for_context != Context.MILK_IMPORTANT:
-		return Vector3(1.0, 1.0, 1.0)
+		return [1.0, 1.0, 1.0]
 	var w: float = ADVANTAGE[clampi(for_strength, 0, 2)]
-	return Vector3(w, w, 1.0)
+	return [w, w, 1.0]
 
 
-## Newborn genotype shares (PP, Pn, nn) for an allele frequency.
-static func genotype_shares(freq: float) -> Vector3:
+## Newborn genotype shares [PP, Pn, nn] for an allele frequency.
+static func genotype_shares(freq: float) -> Array[float]:
 	var q: float = 1.0 - freq
-	return Vector3(freq * freq, 2.0 * freq * q, q * q)
+	return [freq * freq, 2.0 * freq * q, q * q]
 
 
 ## Share of adults who keep making lactase: PP + Pn. Not the same number as the allele frequency.
 static func phenotype_share(freq: float) -> float:
-	var g: Vector3 = genotype_shares(freq)
-	return g.x + g.y
+	var g: Array[float] = genotype_shares(freq)
+	return g[0] + g[1]
 
 
 ## Genotype shares among the parents of the next generation, after weighting.
-static func selected_shares(freq: float, w: Vector3) -> Vector3:
-	var g: Vector3 = genotype_shares(freq)
-	var weighted: Vector3 = Vector3(g.x * w.x, g.y * w.y, g.z * w.z)
-	var total: float = weighted.x + weighted.y + weighted.z
+static func selected_shares(freq: float, w: Array[float]) -> Array[float]:
+	var g: Array[float] = genotype_shares(freq)
+	var weighted: Array[float] = [g[0] * w[0], g[1] * w[1], g[2] * w[2]]
+	var total: float = weighted[0] + weighted[1] + weighted[2]
 	if total <= 0.0:
 		return g
-	return weighted / total
+	return [weighted[0] / total, weighted[1] / total, weighted[2] / total]
 
 
 ## The allele frequency one generation later.
-static func next_frequency(freq: float, w: Vector3) -> float:
-	var s: Vector3 = selected_shares(freq, w)
-	return clampf(s.x + 0.5 * s.y, 0.0, 1.0)
+static func next_frequency(freq: float, w: Array[float]) -> float:
+	# With equal weights nothing is selecting, so the frequency is returned exactly as it was.
+	if w[0] == w[1] and w[1] == w[2]:
+		return clampf(freq, 0.0, 1.0)
+	var s: Array[float] = selected_shares(freq, w)
+	return clampf(s[0] + 0.5 * s[1], 0.0, 1.0)
 
 
 ## Moves to the next generation. This is the only method that changes the allele frequency.
@@ -117,8 +122,8 @@ func step_generation() -> void:
 ## Whole-number genotype counts [PP, Pn, nn] for `n` pictured newborns (largest remainders, so the
 ## counts always add up to n).
 static func avatar_counts(freq: float, n: int) -> Array[int]:
-	var g: Vector3 = genotype_shares(freq)
-	var exact: Array[float] = [g.x * float(n), g.y * float(n), g.z * float(n)]
+	var g: Array[float] = genotype_shares(freq)
+	var exact: Array[float] = [g[0] * float(n), g[1] * float(n), g[2] * float(n)]
 	var counts: Array[int] = [int(floor(exact[0])), int(floor(exact[1])), int(floor(exact[2]))]
 	var left: int = n - counts[0] - counts[1] - counts[2]
 	while left > 0:

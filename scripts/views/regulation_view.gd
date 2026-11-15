@@ -95,6 +95,7 @@ func build() -> void:
 		cell_views.append(cell)
 		var digest: DigestPanel = DigestPanel.create(app)
 		digest.set_caption("")
+		digest.readout.compact = true
 		column.add_child(digest)
 		digest_panels.append(digest)
 	columns[1].visible = false

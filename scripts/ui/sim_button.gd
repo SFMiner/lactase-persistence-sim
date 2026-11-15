@@ -7,8 +7,8 @@ extends Button
 # === CONSTANTS ===
 enum Mark { NONE, RADIO, CHECK }
 const ICON_SIZE: float = 20.0
-const GAP: float = 6.0
-const PAD: float = 12.0
+const GAP: float = 5.0
+const PAD: float = 8.0
 
 # === PUBLIC VARIABLES ===
 var caption: String = "":

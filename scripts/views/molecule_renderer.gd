@@ -18,6 +18,8 @@ var _band: float = 0.0
 var _border_y: float = 0.0
 var _enzyme_w: float = 0.0
 var _sugar_r: float = 0.0
+## True when the picture is too small for name tags on the molecules.
+var _small: bool = false
 
 
 # === LIFECYCLE METHODS ===
@@ -34,6 +36,7 @@ func _draw() -> void:
 	_border_y = _h - _band
 	_enzyme_w = clampf(minf(_w / 11.5, _border_y * 0.34), 22.0, 66.0)
 	_sugar_r = _enzyme_w * 0.135
+	_small = _h < 130.0 or _w < 260.0
 	_draw_background()
 	if model == null:
 		return
@@ -154,6 +157,8 @@ func _draw_time() -> void:
 func _draw_labels(explain: bool, reduced: bool) -> void:
 	var size_px: int = 12 if _w >= 300.0 else 10
 	Shapes.text(self, Vector2(5, 3), "inside the small intestine", size_px, UiTheme.MUTED)
+	if _small:
+		return
 	if _band >= 22.0:
 		Shapes.tag(self, Vector2(minf(_w * 0.5, _w - 80.0), _h - _band * 0.42), "cells of the intestine lining", size_px)
 	var first_lining: MoleculeModel.Enzyme = null
@@ -204,7 +209,8 @@ func _draw_status(explain: bool) -> void:
 			lines.append("All the lactose was split.")
 	if explain and model.cleaved > 0 and not model.finished:
 		lines.append("Lactase is not used up: each one is reused.")
-	var y: float = _border_y * 0.42 - float(lines.size()) * 10.0
+	# Top-left, under the caption, so the notes do not cover the enzymes at work.
+	var y: float = 29.0
 	for line: String in lines:
-		Shapes.tag(self, Vector2(_w / 2.0, y), line, 13 if _w >= 300.0 else 11)
-		y += 22.0
+		Shapes.tag_left(self, Vector2(5.0, y), line, 12 if _w >= 300.0 else 11)
+		y += 20.0

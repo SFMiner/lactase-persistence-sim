@@ -11,15 +11,17 @@ var objective: String = ""
 # === LIFECYCLE METHODS ===
 func _init() -> void:
 	focus_mode = Control.FOCUS_ALL
-	custom_minimum_size = Vector2(250, 150)
+	custom_minimum_size = Vector2(200, 150)
+	clip_contents = true
 
 
 func _draw() -> void:
-	var art: Rect2 = Rect2(10.0, 8.0, size.x - 20.0, maxf(size.y * 0.42, 40.0))
+	var art: Rect2 = Rect2(10.0, 8.0, size.x - 20.0, clampf(size.y * 0.42, 40.0, 120.0))
 	draw_rect(art, UiTheme.LUMEN)
 	draw_rect(art, UiTheme.LINE, false, 1.0)
 	var c: Vector2 = art.get_center()
-	var u: float = art.size.y
+	# One drawing unit: every picture fits in a box about 3.6 units wide and 1 unit tall.
+	var u: float = minf(art.size.y * 0.8, art.size.x / 3.8)
 	match tile_id:
 		"molecules":
 			Shapes.lactase(self, c + Vector2(-u * 0.5, u * 0.12), u * 1.1)

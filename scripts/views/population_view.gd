@@ -218,9 +218,9 @@ func _update() -> void:
 		text = "A (%s). %s\nB (%s). %s" % [_setting_text(model_a), text, _setting_text(model_b), _counts_text(model_b)]
 	counts_label.text = text
 	var m: PopulationModel = _edited()
-	var w: Vector3 = PopulationModel.weights(m.context, m.strength)
+	var w: Array[float] = PopulationModel.weights(m.context, m.strength)
 	if m.advantage_on():
-		advantage_label.text = "Advantage now: ON. In this model, adults who make lactase leave %.2f times as many children." % w.x
+		advantage_label.text = "Advantage now: ON. In this model, adults who make lactase leave %.2f times as many children." % w[0]
 	elif m.context == PopulationModel.Context.LITTLE_MILK:
 		advantage_label.text = "Advantage now: OFF. Fresh milk is not used here, so making lactase as an adult changes nothing."
 	else:

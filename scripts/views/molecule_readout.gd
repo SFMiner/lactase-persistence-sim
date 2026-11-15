@@ -6,6 +6,12 @@ extends Control
 
 # === PUBLIC VARIABLES ===
 var model: MoleculeModel = null
+## One line of counts instead of three bars (used where height is short).
+var compact: bool = false:
+	set(value):
+		compact = value
+		custom_minimum_size = Vector2(160, 24 if compact else 62)
+		queue_redraw()
 
 
 # === LIFECYCLE METHODS ===
@@ -17,6 +23,9 @@ func _init() -> void:
 func _draw() -> void:
 	if model == null:
 		return
+	if compact:
+		_draw_compact()
+		return
 	var row_h: float = size.y / 3.0
 	var scale_max: float = float(maxi(model.lactose_start, 1))
 	_row(0, row_h, MoleculeModel.Kind.LACTOSE, "Lactose left", model.lactose_remaining, scale_max,
@@ -26,6 +35,26 @@ func _draw() -> void:
 
 
 # === PRIVATE METHODS ===
+func _draw_compact() -> void:
+	var mid: float = size.y / 2.0
+	var x: float = 14.0
+	var parts: Array = [
+		[MoleculeModel.Kind.LACTOSE, "lactose left %d of %d" % [model.lactose_remaining, model.lactose_start]],
+		[MoleculeModel.Kind.GLUCOSE, "glucose %d" % model.glucose_formed],
+		[MoleculeModel.Kind.GALACTOSE, "galactose %d" % model.galactose_formed],
+	]
+	var font_size: int = 13 if size.x >= 360.0 else 11
+	for part: Array in parts:
+		var kind: int = part[0]
+		var text: String = part[1]
+		if kind == MoleculeModel.Kind.LACTOSE:
+			Shapes.lactose(self, Vector2(x, mid), 4.5)
+		else:
+			Shapes.sugar(self, kind, Vector2(x, mid), 6.0)
+		Shapes.text(self, Vector2(x + 13.0, mid - float(font_size) * 0.68), text, font_size)
+		x += 13.0 + Shapes.text_width(text, font_size) + 22.0
+
+
 func _row(index: int, row_h: float, kind: int, caption: String, value: int, scale_max: float, number: String) -> void:
 	var y: float = float(index) * row_h
 	var mid: float = y + row_h / 2.0

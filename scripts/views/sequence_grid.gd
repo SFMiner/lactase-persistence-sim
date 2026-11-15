@@ -107,7 +107,7 @@ func _draw() -> void:
 
 # === PUBLIC METHODS ===
 func refresh_min() -> void:
-	custom_minimum_size = Vector2(_label_width() + 7.0 * 52.0, HEADER_H + float(maxi(rows.size(), 1)) * UiKit.target_px)
+	custom_minimum_size = Vector2(_label_width() + 7.0 * 46.0, HEADER_H + float(maxi(rows.size(), 1)) * UiKit.target_px)
 	queue_redraw()
 
 
@@ -166,7 +166,7 @@ func spoken() -> String:
 
 # === PRIVATE METHODS ===
 func _label_width() -> float:
-	return 104.0
+	return 88.0
 
 
 func _row_height() -> float:

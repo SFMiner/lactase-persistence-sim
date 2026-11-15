@@ -37,6 +37,7 @@ var title_label: Label = null
 var _content: Control = null
 var _overlay_layer: Control = null
 var _corner: Control = null
+var _bar_height_used: float = 0.0
 
 
 # === LIFECYCLE METHODS ===
@@ -154,13 +155,18 @@ func _build() -> void:
 	bar_style.content_margin_bottom = 4.0
 	top_bar.add_theme_stylebox_override("panel", bar_style)
 	column.add_child(top_bar)
-	var row: HBoxContainer = UiKit.hbox(6)
-	top_bar.add_child(row)
+	# The buttons flow onto a second line in a narrow frame, so they never slide under the
+	# site's full-screen button, which the spacer at the right end of the bar keeps clear.
+	var bar_row: HBoxContainer = UiKit.hbox(0)
+	top_bar.add_child(bar_row)
+	var row: HFlowContainer = UiKit.flow(6)
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar_row.add_child(row)
 	home_button = UiKit.button("Home", "home", show_view.bind("menu"))
 	row.add_child(home_button)
 	title_label = UiKit.label(GAME_TITLE, UiTheme.TITLE_FONT, UiTheme.INK, false)
-	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_label.clip_text = true
+	title_label.custom_minimum_size = Vector2(350.0, 44.0)
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(title_label)
 	mode_button = UiKit.button("Mode: Explore", "view", _toggle_mode)
@@ -173,7 +179,8 @@ func _build() -> void:
 	row.add_child(settings_button)
 	# Empty space under the site's full-screen button.
 	_corner = UiKit.spacer(ResponsiveLayout.RESERVED_CSS.x)
-	row.add_child(_corner)
+	bar_row.add_child(_corner)
+	top_bar.resized.connect(_on_bar_resized)
 	_content = Control.new()
 	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_content.clip_contents = true
@@ -215,16 +222,20 @@ func _on_layout(view_size: Vector2) -> void:
 	home_button.compact = narrow
 	help_button.compact = narrow
 	settings_button.compact = narrow
-	mode_button.compact = view_size.x < 620.0
-	labels_button.compact = view_size.x < 620.0
 	title_label.visible = not narrow
-	# Without the title the spacer has to push the buttons left of the reserved corner.
-	_corner.size_flags_horizontal = Control.SIZE_EXPAND_FILL if narrow else Control.SIZE_FILL
-	var bar_height: float = UiKit.target_px + 9.0
+	title_label.custom_minimum_size.y = UiKit.target_px
+	var bar_height: float = maxf(top_bar.size.y, UiKit.target_px + 9.0)
+	_bar_height_used = bar_height
 	if current_view != null and current_view.has_method("apply_layout"):
 		current_view.call("apply_layout", view_size - Vector2(0.0, bar_height), narrow, reserve, bar_height)
 	for o: OverlayPanel in overlays:
 		o.fit(view_size)
+
+
+## The bar grows to two lines in a narrow frame; the view needs to know its real height.
+func _on_bar_resized() -> void:
+	if layout != null and not is_equal_approx(top_bar.size.y, _bar_height_used):
+		_on_layout(layout.view_size)
 
 
 func _open_overlay(title: String) -> OverlayPanel:

@@ -62,6 +62,11 @@ static func tag(ci: CanvasItem, center: Vector2, s: String, size: int = 12, col:
 	text_centered(ci, center, s, size, col)
 
 
+## Like tag(), but with its left edge at `pos.x`.
+static func tag_left(ci: CanvasItem, pos: Vector2, s: String, size: int = 12, col: Color = UiTheme.INK) -> void:
+	tag(ci, pos + Vector2((text_width(s, size) + 8.0) / 2.0, 0.0), s, size, col)
+
+
 # === BASIC SHAPES ===
 static func ngon(center: Vector2, r: float, sides: int, rotation: float = 0.0) -> PackedVector2Array:
 	var pts: PackedVector2Array = PackedVector2Array()
