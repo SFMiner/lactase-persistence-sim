@@ -1,0 +1,13 @@
+# Godot 4
+.godot/
+*.translation
+
+# Build output and stray binaries
+/build/
+*.exe
+*.zip
+*.tmp
+
+# Working documents that stay out of the repository
+fable-prompt.md
+Sims_Site_Hosting_Requirements.md
