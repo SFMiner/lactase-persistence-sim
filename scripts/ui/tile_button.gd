@@ -13,6 +13,11 @@ func _init() -> void:
 	focus_mode = Control.FOCUS_ALL
 	custom_minimum_size = Vector2(200, 150)
 	clip_contents = true
+	# The tile clips its drawing, which would also clip the theme's outside focus outline, so
+	# the outline is drawn inside the tile instead (see _draw).
+	add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	focus_entered.connect(queue_redraw)
+	focus_exited.connect(queue_redraw)
 
 
 func _draw() -> void:
@@ -58,6 +63,8 @@ func _draw() -> void:
 	draw_string(font, Vector2(12.0, y + font.get_ascent(UiTheme.TITLE_FONT)), tile_title, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24.0, UiTheme.TITLE_FONT, UiTheme.INK)
 	y += font.get_height(UiTheme.TITLE_FONT) + 2.0
 	draw_multiline_string(font, Vector2(12.0, y + font.get_ascent(UiTheme.SMALL_FONT)), objective, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24.0, UiTheme.SMALL_FONT, 3, UiTheme.MUTED)
+	if has_focus():
+		draw_rect(Rect2(Vector2(2.5, 2.5), size - Vector2(5, 5)), UiTheme.FOCUS, false, 5.0)
 
 
 # === PUBLIC METHODS ===

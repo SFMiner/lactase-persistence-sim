@@ -119,6 +119,9 @@ func _draw_strip(labels: bool) -> void:
 	draw_line(Vector2(bx + 1.0, mid + 8.0), Vector2(bx + 5.0, mid - 8.0), UiTheme.INK, 1.5, true)
 	var reg_dim: float = 0.4 if focus_region == EvidenceData.Region.CODING else 1.0
 	var cod_dim: float = 0.4 if focus_region == EvidenceData.Region.UPSTREAM else 1.0
+	# White first, so a dimmed box does not let the strand show through its text.
+	draw_rect(reg, UiTheme.PANEL)
+	draw_rect(cod, UiTheme.PANEL)
 	# Regulatory DNA: striped.
 	draw_rect(reg, Color(UiTheme.REGULATORY, reg_dim))
 	Shapes.hatch(self, reg, Color(UiTheme.INK, 0.55 * reg_dim), 7.0, 1.2)
@@ -135,7 +138,7 @@ func _draw_strip(labels: bool) -> void:
 		var d: Vector2 = Vector2(reg.position.x + reg.size.x * 0.5, reg.position.y - 7.0)
 		Shapes.filled(self, PackedVector2Array([d + Vector2(0, -6), d + Vector2(6, 0), d + Vector2(0, 6), d + Vector2(-6, 0)]), UiTheme.PANEL, UiTheme.INK, 2.0)
 	if labels:
-		var fs: int = 11
+		var fs: int = 12
 		Shapes.text_centered(self, Vector2(reg.get_center().x, reg.end.y + 9.0), "regulatory DNA", fs)
 		Shapes.text_centered(self, Vector2(cod.get_center().x, cod.end.y + 9.0), "LCT coding region", fs)
 		var coding: String = coding_text(cod.size.x - tip - 8.0, fs)

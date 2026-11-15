@@ -238,7 +238,7 @@ func _redraw() -> void:
 		cell_views[i].anim_time = _anim_time
 		cell_views[i].animating = running
 		cell_views[i].queue_redraw()
-		digest_panels[i].renderer.empty_note = "No lactase from this cell." if models[i].enzyme_count == 0 else ""
+		digest_panels[i].renderer.empty_note = "A muscle cell makes no lactase, so it adds none here." if configs[i].cell == RegulationModel.CellType.MUSCLE else ""
 		digest_panels[i].redraw()
 	if step_button != null:
 		step_button.disabled = _all_finished()

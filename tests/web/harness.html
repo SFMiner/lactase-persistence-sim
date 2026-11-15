@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lactase Persistence Simulator iframe harness</title>
+<style>body { margin: 12px; font-family: sans-serif; } iframe { border: 1px solid #888; display: block; margin-top: 8px; }</style>
+</head>
+<body>
+<!-- Stand-in for the sims site's play page: a same-origin iframe, a Full screen button, and a copy of
+     the page's listener for the game's "sims:leave-game" message. Not the real site. -->
+<button id="fs">Full screen</button>
+<iframe id="g" title="Lactase Persistence Simulator" width="1180" height="500" allow="fullscreen"></iframe>
+<script>
+const params = new URLSearchParams(location.search);
+const frame = document.getElementById('g');
+frame.width = params.get('w') || '1180';
+frame.height = params.get('h') || '500';
+frame.src = 'game/index.html' + (params.get('q') ? '?' + params.get('q') : '');
+window.leaves = 0;
+// Every message the frame sends, so the test can prove nothing but the leave message is posted.
+window.messageTypes = [];
+window.addEventListener('message', (e) => {
+	if (e.source === frame.contentWindow) {
+		window.messageTypes.push(e.data && e.data.type ? String(e.data.type) : 'untyped');
+	}
+	if (e.origin === location.origin && e.source === frame.contentWindow && e.data && e.data.type === 'sims:leave-game') {
+		window.leaves++;
+		document.getElementById('fs').focus();
+	}
+});
+</script>
+</body>
+</html>

@@ -13,6 +13,19 @@ var close_button: SimButton = null
 var title_label: Label = null
 
 
+# === PRIVATE VARIABLES ===
+var _wanted: Rect2 = Rect2()
+
+
+# === LIFECYCLE METHODS ===
+func _process(_delta: float) -> void:
+	# Wrapping labels report a tall minimum height before they know their width, which stretches
+	# the card once. Put it back to the size that fits the frame.
+	if _wanted.size.x > 0.0 and (panel.size != _wanted.size or panel.position != _wanted.position):
+		panel.position = _wanted.position
+		panel.size = _wanted.size
+
+
 # === PUBLIC METHODS ===
 static func create(title: String) -> OverlayPanel:
 	var o: OverlayPanel = OverlayPanel.new()
@@ -53,8 +66,9 @@ static func create(title: String) -> OverlayPanel:
 func fit(view_size: Vector2) -> void:
 	var w: float = minf(620.0, view_size.x - 16.0)
 	var h: float = minf(440.0, view_size.y - 16.0)
-	panel.position = ((view_size - Vector2(w, h)) / 2.0).floor()
-	panel.size = Vector2(w, h)
+	_wanted = Rect2(((view_size - Vector2(w, h)) / 2.0).floor(), Vector2(w, h))
+	panel.position = _wanted.position
+	panel.size = _wanted.size
 
 
 func close() -> void:

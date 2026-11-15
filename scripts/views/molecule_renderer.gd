@@ -160,7 +160,7 @@ func _draw_labels(explain: bool, reduced: bool) -> void:
 	if _small:
 		return
 	if _band >= 22.0:
-		Shapes.tag(self, Vector2(minf(_w * 0.5, _w - 80.0), _h - _band * 0.42), "cells of the intestine lining", size_px)
+		Shapes.tag_left(self, Vector2(5.0, _h - _band * 0.42), "cells of the intestine lining", size_px)
 	var first_lining: MoleculeModel.Enzyme = null
 	var first_supplement: MoleculeModel.Enzyme = null
 	for e: MoleculeModel.Enzyme in model.enzymes:
@@ -183,17 +183,21 @@ func _draw_labels(explain: bool, reduced: bool) -> void:
 		seen[p.kind] = true
 		var names: Array[String] = ["lactose", "glucose", "galactose"]
 		var at: Vector2 = _particle_px(p, reduced) + Vector2(0, -_sugar_r - 11.0)
-		at.x = clampf(at.x, 32.0, _w - 36.0)
+		# Glucose is named to the left of its shape and galactose to the right, so the two
+		# tags do not land on each other when the products have just separated.
+		var half: float = Shapes.text_width(names[p.kind], size_px) / 2.0 + 4.0
+		if p.kind == MoleculeModel.Kind.GLUCOSE:
+			at.x -= half
+		elif p.kind == MoleculeModel.Kind.GALACTOSE:
+			at.x += half
+		at.x = clampf(at.x, half + 2.0, _w - half - 2.0)
 		at.y = maxf(at.y, 28.0)
 		Shapes.tag(self, at, names[p.kind], size_px)
 	if explain:
 		for e: MoleculeModel.Enzyme in model.enzymes:
 			if e.state == MoleculeModel.EnzymeState.CLEAVING:
-				var c: Vector2 = enzyme_px(e) + Vector2(0, -_enzyme_w * 0.62)
-				Shapes.droplet(self, c + Vector2(-34, 2), 4.0)
-				c.x = clampf(c.x, 70.0, _w - 60.0)
-				Shapes.tag(self, c + Vector2(18, 0), "water splits the bond", size_px)
-				break
+				# A water drop at each enzyme that is cleaving right now.
+				Shapes.droplet(self, enzyme_px(e) + Vector2(0, -_enzyme_w * 0.62), 4.0)
 
 
 func _draw_status(explain: bool) -> void:
@@ -209,6 +213,8 @@ func _draw_status(explain: bool) -> void:
 			lines.append("All the lactose was split.")
 	if explain and model.cleaved > 0 and not model.finished:
 		lines.append("Lactase is not used up: each one is reused.")
+		if not _small:
+			lines.append("Each split uses one water molecule (drop).")
 	# Top-left, under the caption, so the notes do not cover the enzymes at work.
 	var y: float = 29.0
 	for line: String in lines:

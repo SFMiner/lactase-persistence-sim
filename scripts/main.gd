@@ -38,6 +38,7 @@ var _content: Control = null
 var _overlay_layer: Control = null
 var _corner: Control = null
 var _bar_height_used: float = 0.0
+var _last_layout_line: String = ""
 
 
 # === LIFECYCLE METHODS ===
@@ -66,6 +67,8 @@ func _ready() -> void:
 	show_view(str(query.get("model", "menu")))
 	_on_app_changed()
 	# The browser smoke test waits for this line: a grey canvas with no errors must not pass.
+	print("lactase-sim: settings mode=%s labels=%s motion=%s text=%d" % ["explain" if app.explain else "explore",
+		"on" if app.labels else "off", "reduced" if app.reduced_motion() else "normal", app.access.text_size])
 	print("lactase-sim: boot ok")
 
 
@@ -209,8 +212,12 @@ func _toggle_labels() -> void:
 
 
 func _on_app_changed() -> void:
-	mode_button.caption = "Mode: Explain" if app.explain else "Mode: Explore"
-	labels_button.caption = "Labels: On" if app.labels else "Labels: Off"
+	# Shorter captions in a narrow frame, so the bar needs fewer lines.
+	var short: bool = layout != null and layout.is_narrow()
+	var mode_word: String = "Explain" if app.explain else "Explore"
+	var labels_word: String = "On" if app.labels else "Off"
+	mode_button.caption = mode_word if short else "Mode: " + mode_word
+	labels_button.caption = "Labels " + labels_word.to_lower() if short else "Labels: " + labels_word
 	if layout != null and not is_equal_approx(layout.text_scale, app.access.text_scale()):
 		layout.set_text_scale(app.access.text_scale())
 
@@ -223,9 +230,15 @@ func _on_layout(view_size: Vector2) -> void:
 	help_button.compact = narrow
 	settings_button.compact = narrow
 	title_label.visible = not narrow
+	_on_app_changed()
 	title_label.custom_minimum_size.y = UiKit.target_px
 	var bar_height: float = maxf(top_bar.size.y, UiKit.target_px + 9.0)
 	_bar_height_used = bar_height
+	var layout_line: String = "lactase-sim: layout %dx%d css=%.2f dpr=%.2f narrow=%s" % [int(view_size.x), int(view_size.y),
+		layout.css_per_px, layout.device_pixel_ratio(), str(narrow)]
+	if layout_line != _last_layout_line:
+		_last_layout_line = layout_line
+		print(layout_line)
 	if current_view != null and current_view.has_method("apply_layout"):
 		current_view.call("apply_layout", view_size - Vector2(0.0, bar_height), narrow, reserve, bar_height)
 	for o: OverlayPanel in overlays:

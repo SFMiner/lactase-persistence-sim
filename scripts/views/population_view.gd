@@ -208,6 +208,13 @@ func _setting_text(m: PopulationModel) -> String:
 	return text
 
 
+## Short form for the chart legend.
+func _advantage_text(m: PopulationModel) -> String:
+	if m.advantage_on():
+		return "%s advantage" % PopulationModel.STRENGTH_NAMES[m.strength].to_lower()
+	return "no advantage"
+
+
 func _update() -> void:
 	pop_a.caption = "A. " if compare else ""
 	pop_b.caption = "B. "
@@ -229,13 +236,13 @@ func _update() -> void:
 	chart.chart_title = "Allele P in the population (%)" if chart_metric == 0 else "Adults who keep making lactase (%)"
 	var list: Array[Dictionary] = []
 	list.append({
-		"name": "A: " + _setting_text(model_a) if compare else _setting_text(model_a),
+		"name": "A: " + _advantage_text(model_a) if compare else _setting_text(model_a),
 		"values": model_a.history_p if chart_metric == 0 else model_a.history_phenotype,
 		"color": UiTheme.SERIES_A, "dashed": false, "square": false, "marks": model_a.change_marks,
 	})
 	if compare:
 		list.append({
-			"name": "B: " + _setting_text(model_b),
+			"name": "B: " + _advantage_text(model_b),
 			"values": model_b.history_p if chart_metric == 0 else model_b.history_phenotype,
 			"color": UiTheme.SERIES_B, "dashed": true, "square": true, "marks": model_b.change_marks,
 		})
