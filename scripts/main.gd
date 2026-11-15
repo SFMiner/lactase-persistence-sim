@@ -226,9 +226,13 @@ func _on_layout(view_size: Vector2) -> void:
 	var narrow: bool = layout.is_narrow()
 	var reserve: Vector2 = layout.reserved_corner()
 	_corner.custom_minimum_size = Vector2(reserve.x, 0.0)
-	home_button.compact = narrow
-	help_button.compact = narrow
-	settings_button.compact = narrow
+	# Icon-only Home, Help and Settings once the bar gets tight (for example with Large text),
+	# so the bar stays on one line for as long as it can.
+	var tight: bool = view_size.x < 1100.0
+	home_button.compact = tight
+	help_button.compact = tight
+	settings_button.compact = tight
+	title_label.custom_minimum_size.x = 300.0 if tight else 350.0
 	title_label.visible = not narrow
 	_on_app_changed()
 	title_label.custom_minimum_size.y = UiKit.target_px

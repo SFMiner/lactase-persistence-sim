@@ -124,7 +124,20 @@ function check(ok, label) {
 	check(await s.waitLog('lactase-sim: boot ok'), 'query: boots with unknown settings');
 	check(s.count('settings mode=explore labels=on motion=normal') === 1 && s.count('lactase-sim: view menu') === 1,
 		'query: unknown keys and values fall back to the defaults');
+	check(badLogs(s.logs).length === 0, 'query: no SCRIPT ERROR or page error with unknown settings');
 	await s.page.close();
+	// The browser's own "reduce motion" preference is the default when nothing else is chosen.
+	const calm = await browser.newContext({ viewport: { width: 1180, height: 500 }, reducedMotion: 'reduce' });
+	const c = await open(calm, base + '/game/index.html');
+	check(await c.waitLog('lactase-sim: boot ok') && c.count('settings mode=explore labels=on motion=reduced') === 1,
+		'query: with the browser set to reduce motion, the simulator starts with reduced motion');
+	check(badLogs(c.logs).length === 0, 'query: no SCRIPT ERROR or page error with the reduced-motion preference');
+	await calm.close();
+	const calm2 = await browser.newContext({ viewport: { width: 1180, height: 500 }, reducedMotion: 'reduce' });
+	const c2 = await open(calm2, base + '/game/index.html?motion=normal');
+	check(await c2.waitLog('lactase-sim: boot ok') && c2.count('motion=normal') === 1,
+		'query: the class setting motion=normal overrides the browser preference');
+	await calm2.close();
 	// Generations: change the setting, then step.
 	s = await open(ctx, base + '/game/index.html?model=population');
 	check(await s.waitLog('lactase-sim: view population'), 'population: opens directly');
@@ -167,6 +180,7 @@ function check(ok, label) {
 	await key(s.page, 'Shift+Tab', 4); // person buttons are unavailable while comparing; back past Zoom to the table
 	await s.page.waitForTimeout(200);
 	await s.page.screenshot({ path: shots + '/web_evidence_compare.png' });
+	check(badLogs(s.logs).length === 0, 'evidence: no SCRIPT ERROR or page error');
 	await ctx.close();
 
 	// ---------- 3. Same-origin iframe, 1180x500: keyboard walk-through ----------

@@ -161,15 +161,17 @@ func _draw_labels(explain: bool, reduced: bool) -> void:
 		return
 	if _band >= 22.0:
 		Shapes.tag_left(self, Vector2(5.0, _h - _band * 0.42), "cells of the intestine lining", size_px)
-	var first_lining: MoleculeModel.Enzyme = null
+	var last_lining: MoleculeModel.Enzyme = null
 	var first_supplement: MoleculeModel.Enzyme = null
 	for e: MoleculeModel.Enzyme in model.enzymes:
 		if e.supplement and first_supplement == null:
 			first_supplement = e
-		elif not e.supplement and first_lining == null:
-			first_lining = e
-	if first_lining != null:
-		Shapes.tag(self, enzyme_px(first_lining) + Vector2(maxf(0.0, 26.0 - enzyme_px(first_lining).x), -_enzyme_w * 0.55), "lactase", size_px)
+		elif not e.supplement and (last_lining == null or e.pos.x >= last_lining.pos.x):
+			last_lining = e
+	if last_lining != null:
+		# Under the right-most lactase, in the cell band, clear of the tags in the lumen.
+		var lx: float = clampf(enzyme_px(last_lining).x, 30.0, _w - 30.0)
+		Shapes.tag(self, Vector2(lx, _h - _band * 0.42), "lactase", size_px)
 	if first_supplement != null:
 		Shapes.tag(self, enzyme_px(first_supplement) + Vector2(34.0, -_enzyme_w * 0.5), "supplement lactase", size_px)
 	var seen: Dictionary = {}
